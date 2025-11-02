@@ -1,5 +1,4 @@
-### Hi I'm Anushka 👋
----
+# Hey I'm Anushka 👋
 I'm a developer and CS student @ University of Waterloo. Currently, I'm building projects focused on **accessibility**, **climate**, and **fintech**. Previously, I:
 - led case competitions for 5k+ youth teaching business literacy through FUSE and Target Alpha
 - developed data analytics dashboards at Nokia & social media distribution tools at Aview
