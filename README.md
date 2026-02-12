@@ -1,9 +1,9 @@
-# Hey I'm Anushka 👋
-I'm a developer and CS student @ University of Waterloo. Currently, I'm building projects focused on **accessibility**, **climate**, and **fintech**. Previously, I:
-- led case competitions for 5k+ youth teaching business literacy through FUSE and Target Alpha
-- developed data analytics dashboards at Nokia & social media distribution tools at Aview
-- was selected as a CIW camper (top 10 female CCC scorers in Canada invited to compete at Waterloo for a spot on the EGOI team) 
-- built an atmospheric water harvesting device that won 3rd nationally @ the youth impact challenge
-- raised 30k+ from Emergent Ventures, 1517 Fund, and more to develop biodegradable hydrogels that serve as an alternative to chemical fertilizers
+# hi, i'm anushka 👋
+i'm a ted rogers scholar + CS student @ UWaterloo. currently, I'm building projects focused on **finance**, **accessibility**, and **climate**. previously, i've:
+- built a [word game](https://www.play6degrees.com/) that reached 1k+ players in 20+ countries!
+- was selected as an [EGOI camper](https://cemc.uwaterloo.ca/sites/default/files/documents/2025/ciw_summary.pdf) (top 10 female CCC scorers in Canada) 
+- developed data analytics dashboards at[ **Nokia** ](https://www.nokia.com/careers/our-locations/canada/students-and-graduates/future-tech-summer-internship/) & social media distribution tools at [**Aview**](https://www.aviewint.com/)
+- raised 30k+ from Emergent Ventures, 1517 Fund, & others to [develop biodegradable hydrogels](https://marginalrevolution.com/marginalrevolution/2025/11/emergent-ventures-india-13th-cohort.html) to replace chemical fertilizers
+- led case competitions for 10k+ youth teaching business literacy through the [FUSE Society](https://www.fusesociety.ca/) and [Target Alpha](https://targetalpha.ca/)
 
-I love solving puzzles, whether it's debugging code, figuring out logic puzzles, or conquering the latest escape room. Feel free to reach out to me [anushka.punukollu@uwaterloo.ca](mailto:anushka.punukollu@uwaterloo.ca)!
+i love solving puzzles, whether it's debugging code, figuring out today's Wordle, or conquering the latest escape room. feel free to reach out to me [anushka.punukollu@uwaterloo.ca](mailto:anushka.punukollu@uwaterloo.ca)!
