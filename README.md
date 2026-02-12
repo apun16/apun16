@@ -9,5 +9,5 @@ i'm a ted rogers scholar + CS student @ UWaterloo. currently, I'm building proje
 i love solving puzzles, whether it's debugging code, figuring out today's Wordle, or conquering the latest escape room. feel free to reach out to me [anushka.punukollu@uwaterloo.ca](mailto:anushka.punukollu@uwaterloo.ca)!
 
 <div align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=apun16&theme=github-dark&hide_border=true&date_format=M%20j%5B%2C%20Y%5D&mode=weekly&ring=60a5fa&fire=ec4899&currStreakLabel=ec4899&sideLabels=ec4899&dates=60a5fa&stroke=60a5fa" alt="GitHub contributions" width="690"/>
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=apun16&theme=github-dark&hide_border=true&date_format=M%20j%5B%2C%20Y%5D&mode=weekly&ring=60a5fa&fire=ec4899&currStreakLabel=ec4899&sideLabels=ec4899&dates=60a5fa&stroke=60a5fa" alt="GitHub contributions" width="600"/>
 </div>
