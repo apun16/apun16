@@ -2,7 +2,10 @@ name: Update streak stats
 
 on:
   schedule:
-    - cron: "30 23 * * *" # daily at 6:30 PM EST (UTC-5)
+    # Runs at both possible UTC offsets for 6:45 PM America/New_York (EST/EDT);
+    # the "Skip unless 6:45 PM local" step below discards the wrong one each day.
+    - cron: "45 22 * * *" # 6:45 PM EDT (UTC-4)
+    - cron: "45 23 * * *" # 6:45 PM EST (UTC-5)
   workflow_dispatch:
 
 permissions:
@@ -12,19 +15,32 @@ jobs:
   update-streak:
     runs-on: ubuntu-latest
     steps:
+      - name: Skip unless 6:45 PM local (America/New_York)
+        if: github.event_name == 'schedule'
+        run: |
+          now="$(TZ=America/New_York date +%H:%M)"
+          if [ "$now" != "18:45" ]; then
+            echo "Local time is $now, not 18:45 — skipping (this run is for the other UTC offset)."
+            echo "SKIP=true" >> "$GITHUB_ENV"
+          fi
+
       - uses: actions/checkout@v4
+        if: env.SKIP != 'true'
 
       - uses: actions/setup-node@v4
+        if: env.SKIP != 'true'
         with:
           node-version: 20
 
       - name: Generate streak SVG
+        if: env.SKIP != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_USERNAME: apun16
         run: node scripts/generate-streak.mjs
 
       - name: Commit if changed
+        if: env.SKIP != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
