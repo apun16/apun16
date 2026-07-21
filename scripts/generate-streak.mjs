@@ -1,0 +1,152 @@
+// Generates assets/streak.svg from live GitHub contribution data.
+// Run by .github/workflows/streak.yml on a daily schedule.
+
+const USERNAME = process.env.GH_USERNAME || "apun16";
+const TOKEN = process.env.GITHUB_TOKEN;
+
+if (!TOKEN) {
+  console.error("Missing GITHUB_TOKEN");
+  process.exit(1);
+}
+
+const QUERY = `
+query($userName: String!) {
+  user(login: $userName) {
+    contributionsCollection {
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            date
+            contributionCount
+          }
+        }
+      }
+    }
+  }
+}`;
+
+async function fetchContributions() {
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: QUERY, variables: { userName: USERNAME } }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`GitHub API error: ${res.status} ${await res.text()}`);
+  }
+
+  const json = await res.json();
+  if (json.errors) {
+    throw new Error(`GraphQL error: ${JSON.stringify(json.errors)}`);
+  }
+
+  return json.data.user.contributionsCollection.contributionCalendar;
+}
+
+function computeStreaks(weeks) {
+  const days = weeks.flatMap((w) => w.contributionDays);
+
+  let longest = 0;
+  let running = 0;
+  for (const day of days) {
+    if (day.contributionCount > 0) {
+      running += 1;
+      longest = Math.max(longest, running);
+    } else {
+      running = 0;
+    }
+  }
+
+  // Current streak: count backwards from the most recent day. Allow today
+  // to be a zero-contribution day in progress without breaking the streak.
+  let current = 0;
+  for (let i = days.length - 1; i >= 0; i--) {
+    const isToday = i === days.length - 1;
+    if (days[i].contributionCount > 0) {
+      current += 1;
+    } else if (isToday) {
+      continue;
+    } else {
+      break;
+    }
+  }
+
+  return { current, longest };
+}
+
+function levelFor(count, max) {
+  if (count === 0) return 0;
+  const ratio = count / Math.max(max, 1);
+  if (ratio > 0.75) return 4;
+  if (ratio > 0.5) return 3;
+  if (ratio > 0.25) return 2;
+  return 1;
+}
+
+const PALETTE = ["#0d1b2e", "#16305c", "#1e40af", "#2563eb", "#60a5fa"];
+
+function buildSvg({ weeks, total, current, longest }) {
+  const cell = 11;
+  const gap = 3;
+  const gridLeft = 260;
+  const gridTop = 40;
+
+  const maxCount = Math.max(...weeks.flatMap((w) => w.contributionDays.map((d) => d.contributionCount)));
+
+  const cells = weeks
+    .map((week, wi) =>
+      week.contributionDays
+        .map((day, di) => {
+          const x = gridLeft + wi * (cell + gap);
+          const y = gridTop + di * (cell + gap);
+          const level = levelFor(day.contributionCount, maxCount);
+          return `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" fill="${PALETTE[level]}"><title>${day.date}: ${day.contributionCount} contributions</title></rect>`;
+        })
+        .join("")
+    )
+    .join("");
+
+  const width = gridLeft + weeks.length * (cell + gap) + 20;
+  const height = 220;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" rx="12" fill="#0a192f"/>
+  <text x="24" y="42" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">CURRENT STREAK</text>
+  <text x="24" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="700" fill="#93c5fd">${current}</text>
+  <text x="24" y="102" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">days</text>
+
+  <text x="24" y="140" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">LONGEST STREAK</text>
+  <text x="24" y="164" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#60a5fa">${longest} days</text>
+
+  <text x="24" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">TOTAL CONTRIBUTIONS</text>
+  <text x="24" y="216" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#3b82f6">${total.toLocaleString()}</text>
+
+  ${cells}
+</svg>`;
+}
+
+async function main() {
+  const calendar = await fetchContributions();
+  const { current, longest } = computeStreaks(calendar.weeks);
+  const svg = buildSvg({
+    weeks: calendar.weeks,
+    total: calendar.totalContributions,
+    current,
+    longest,
+  });
+
+  const fs = await import("node:fs/promises");
+  await fs.mkdir("assets", { recursive: true });
+  await fs.writeFile("assets/streak.svg", svg);
+  console.log(`Wrote assets/streak.svg — current streak ${current}, longest ${longest}, total ${calendar.totalContributions}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

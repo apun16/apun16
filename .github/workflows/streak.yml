@@ -1,0 +1,33 @@
+name: Update streak stats
+
+on:
+  schedule:
+    - cron: "30 23 * * *" # daily at 6:30 PM EST (UTC-5)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-streak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate streak SVG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_USERNAME: apun16
+        run: node scripts/generate-streak.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/streak.svg
+          git diff --cached --quiet || git commit -m "chore: update streak stats"
+          git push
