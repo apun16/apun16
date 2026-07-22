@@ -51,17 +51,6 @@ async function fetchContributions() {
 function computeStreaks(weeks) {
   const days = weeks.flatMap((w) => w.contributionDays);
 
-  let longest = 0;
-  let running = 0;
-  for (const day of days) {
-    if (day.contributionCount > 0) {
-      running += 1;
-      longest = Math.max(longest, running);
-    } else {
-      running = 0;
-    }
-  }
-
   // Current streak: count backwards from the most recent day. Allow today
   // to be a zero-contribution day in progress without breaking the streak.
   let current = 0;
@@ -76,7 +65,7 @@ function computeStreaks(weeks) {
     }
   }
 
-  return { current, longest };
+  return { current };
 }
 
 function levelFor(count, max) {
@@ -90,7 +79,7 @@ function levelFor(count, max) {
 
 const PALETTE = ["#0d1b2e", "#16305c", "#1e40af", "#2563eb", "#60a5fa"];
 
-function buildSvg({ weeks, total, current, longest }) {
+function buildSvg({ weeks, total, current }) {
   const cell = 11;
   const gap = 3;
   const gridLeft = 260;
@@ -117,14 +106,10 @@ function buildSvg({ weeks, total, current, longest }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <rect width="${width}" height="${height}" rx="12" fill="#0a192f"/>
   <text x="24" y="42" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">CURRENT STREAK</text>
-  <text x="24" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="700" fill="#93c5fd">${current}</text>
-  <text x="24" y="102" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">days</text>
+  <text x="24" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="700" fill="#93c5fd">${current}<tspan font-size="16" font-weight="400" fill="#64748b" dx="8">days</tspan></text>
 
-  <text x="24" y="140" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">LONGEST STREAK</text>
-  <text x="24" y="164" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#60a5fa">${longest} days</text>
-
-  <text x="24" y="196" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">TOTAL CONTRIBUTIONS</text>
-  <text x="24" y="216" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#3b82f6">${total.toLocaleString()}</text>
+  <text x="24" y="140" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">TOTAL CONTRIBUTIONS</text>
+  <text x="24" y="164" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#3b82f6">${total.toLocaleString()}</text>
 
   ${cells}
 </svg>`;
@@ -132,18 +117,17 @@ function buildSvg({ weeks, total, current, longest }) {
 
 async function main() {
   const calendar = await fetchContributions();
-  const { current, longest } = computeStreaks(calendar.weeks);
+  const { current } = computeStreaks(calendar.weeks);
   const svg = buildSvg({
     weeks: calendar.weeks,
     total: calendar.totalContributions,
     current,
-    longest,
   });
 
   const fs = await import("node:fs/promises");
   await fs.mkdir("assets", { recursive: true });
   await fs.writeFile("assets/streak.svg", svg);
-  console.log(`Wrote assets/streak.svg — current streak ${current}, longest ${longest}, total ${calendar.totalContributions}`);
+  console.log(`Wrote assets/streak.svg — current streak ${current}, total ${calendar.totalContributions}`);
 }
 
 main().catch((err) => {
