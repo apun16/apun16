@@ -2,11 +2,17 @@
 // Run by .github/workflows/streak.yml on a daily schedule.
 
 const USERNAME = process.env.GH_USERNAME || "apun16";
-const TOKEN = process.env.GITHUB_TOKEN;
+// A PAT with read:user scope is required for private contributions to be
+// counted; the Actions-provided GITHUB_TOKEN only ever sees public ones.
+const TOKEN = process.env.GH_PAT || process.env.GITHUB_TOKEN;
 
 if (!TOKEN) {
-  console.error("Missing GITHUB_TOKEN");
+  console.error("Missing GH_PAT / GITHUB_TOKEN");
   process.exit(1);
+}
+
+if (!process.env.GH_PAT) {
+  console.warn("GH_PAT not set — private contributions will be excluded from the total.");
 }
 
 const QUERY = `
@@ -80,10 +86,10 @@ function levelFor(count, max) {
 const PALETTE = ["#0d1b2e", "#16305c", "#1e40af", "#2563eb", "#60a5fa"];
 
 function buildSvg({ weeks, total, current }) {
-  const cell = 11;
-  const gap = 3;
-  const gridLeft = 260;
-  const gridTop = 40;
+  const cell = 16;
+  const gap = 4;
+  const gridLeft = 24;
+  const gridTop = 28;
 
   const maxCount = Math.max(...weeks.flatMap((w) => w.contributionDays.map((d) => d.contributionCount)));
 
@@ -100,18 +106,24 @@ function buildSvg({ weeks, total, current }) {
     )
     .join("");
 
-  const width = gridLeft + weeks.length * (cell + gap) + 20;
-  const height = 220;
+  // Stats sit below the grid: label row, then value row.
+  const gridBottom = gridTop + 7 * (cell + gap) - gap;
+  const labelY = gridBottom + 44;
+  const valueY = labelY + 34;
+
+  const width = gridLeft + weeks.length * (cell + gap) - gap + gridLeft;
+  const height = valueY + 28;
+  const totalX = 260;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <rect width="${width}" height="${height}" rx="12" fill="#0a192f"/>
-  <text x="24" y="42" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">CURRENT STREAK</text>
-  <text x="24" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="700" fill="#93c5fd">${current}<tspan font-size="16" font-weight="400" fill="#64748b" dx="8">days</tspan></text>
-
-  <text x="24" y="140" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">TOTAL CONTRIBUTIONS</text>
-  <text x="24" y="164" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#3b82f6">${total.toLocaleString()}</text>
-
   ${cells}
+
+  <text x="${gridLeft}" y="${labelY}" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">CURRENT STREAK</text>
+  <text x="${gridLeft}" y="${valueY}" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#93c5fd">${current}<tspan font-size="16" font-weight="400" fill="#64748b" dx="8">days</tspan></text>
+
+  <text x="${totalX}" y="${labelY}" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b" letter-spacing="1">TOTAL COMMITS IN PAST YEAR (INCL. PRIVATE)</text>
+  <text x="${totalX}" y="${valueY}" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#3b82f6">${total.toLocaleString()}</text>
 </svg>`;
 }
 

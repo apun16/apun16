@@ -24,6 +24,9 @@ jobs:
 
       - name: Generate streak SVG
         env:
+          # GH_PAT (read:user scope) is what makes private contributions count;
+          # without it the script falls back to public-only totals.
+          GH_PAT: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_USERNAME: apun16
         run: node scripts/generate-streak.mjs
